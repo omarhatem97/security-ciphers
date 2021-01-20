@@ -88,7 +88,6 @@ def permuatation_box (s, perm_matrix):
     return res
 
 
-
 def generate_keys(key):
     """takes original 64-bit original key and returns 16 keys 48-bits each """
     keys = []
@@ -139,6 +138,7 @@ def expansion_permutation(message):
     message_p = permuatation_box(message, EP)
 
     return message_p
+
 
 def s_box(out_xor):
     """takes 48-bit string , returns 32 bit string"""
@@ -208,7 +208,6 @@ def s_box(out_xor):
     return res
 
 
-
 def final_permutation(out_sBox):
     """takes 32 bit , returns 32 bit string"""
     F_PBox = [16, 7, 20, 21, 29, 12, 28, 17,
@@ -219,10 +218,6 @@ def final_permutation(out_sBox):
     res = permuatation_box(out_sBox, F_PBox)
 
     return res
-
-
-
-
 
 
 def des_function(message, key):
@@ -244,24 +239,38 @@ def des_function(message, key):
     return res
 
 
+def fp(cipher):
+    """ip-1 """
+    FP = [40, 8, 48, 16, 56, 24, 64, 32,
+          39, 7, 47, 15, 55, 23, 63, 31,
+          38, 6, 46, 14, 54, 22, 62, 30,
+          37, 5, 45, 13, 53, 21, 61, 29,
+          36, 4, 44, 12, 52, 20, 60, 28,
+          35, 3, 43, 11, 51, 19, 59, 27,
+          34, 2, 42, 10, 50, 18, 58, 26,
+          33, 1, 41, 9, 49, 17, 57, 25]
+    res = permuatation_box(cipher, FP)
+    return res
 
 
 def one_round_des(key, plain):
     """takes key and plaintext and performs des encryption algo , returns ciphertext"""
     cipher = ""
-
+    keys = generate_keys(key)
     #perform initial permutation on plaintext
     message_p = initial_permutation(plain)
+    l_old = message_p[0:32]
+    r_old = message_p[32:64]
+    l_new = ''
+    r_new = ''
+    for i in range(16):
+        l_new = r_old
+        out_f = des_function(r_old, keys[i])  # 32-bit output from des-function
+        r_new = f'{int(l_old, 2) ^ int(out_f, 2):032b}'
+        r_old = r_new
+        l_old = l_new
 
-    #divide message to left and right
-    l0 = message_p[0:32]
-    r0 = message_p[32:64]
-
-    l1 = r0
-    out_f = des_function(r0, key) #32-bit output from des-function
-    r1 = f'{int(l0)^ int(out_f):032b}'
-
-    cipher = l1 + r1
+    cipher = fp(r_new + l_new)
 
     return cipher
 
@@ -269,26 +278,15 @@ def one_round_des(key, plain):
 def multi_round_des(key, plain, num_rounds):
     """takes key and plaintext and performs des encryption algo , returns ciphertext"""
     cipher = ""
+    out = plain
 
-    #generate 16 keys 48-bits each
-    keys = generate_keys(key)
-
-    #perform initial permutation on plaintext
-    message_p = initial_permutation(plain)
-    curr_message = message_p
     for i in range(num_rounds):
-        # divide message to left and right
-        l0 = curr_message[0:32]
-        r0 = curr_message[32:64]
+        out = one_round_des(key, out)
 
-        l1 = r0
-        out_f = des_function(r0, keys[i])  # 32-bit output from des-function
-        r1 = f'{int(l0,2) ^ int(out_f,2):032b}'
-        curr_message = l1+r1
-
-    cipher = curr_message
-
+    cipher = out
     return cipher
+
+
 
 def rem(s):
     res = ''
@@ -297,28 +295,21 @@ def rem(s):
             res+=c
     return res
 
+
 if __name__ == '__main__':
 
+    key = int(input('Enter the secret key: '), 16)
+    plain = int(input('Enter plain: '), 16)
+    num = int(input('Enter num iter: '))
 
-
-    # key = int(input('Enter the secret key: '), 16)
-    # plain = int(input('Enter plain: '), 16)
-    # num = int(input('Enter num iter: '))
-
-    key = int('0000000000000000', 16)
-    plain = int('FFFFFFFFFFFFFFFF', 16)
-    num = 1
+    # key = int('0000000000000000', 16)
+    # plain = int('FFFFFFFFFFFFFFFF', 16)
+    # num = 1
     k = f'{key:064b}'
     p = f'{plain:064b}'
 
-    res = multi_round_des(k,p,1)
-    print(len(res))
-    print(k)
-    print(p)
+    res = multi_round_des(k,p,num)
     print(hex(int(res,2)))
-    print(int(0x355550B2150E2451))
-
-
 
 
     #testing
