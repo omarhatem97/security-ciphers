@@ -119,9 +119,93 @@ def transpose_matrix(out_mix):
     return res
 
 
+def get_word(num, key):
+    """returns a specific word from a key"""
+    return key[num*8 : num*8+8]
+
+
+def shift8(word):
+    """shifts a word by 8 bits"""
+    toShift = word[0:2]
+    return word[2:] + toShift
+
+
+
+def subByte(word):
+    """
+    returns subByte of word eg: same as s-box..... this function is used in keygeneration
+    """
+    sbox = [99, 124, 119, 123, 242, 107, 111, 197, 48, 1, 103, 43, 254, 215, 171, 118, 202, 130, 201, 125, 250, 89, 71,
+            240, 173, 212, 162, 175, 156, 164, 114, 192, 183, 253, 147, 38, 54, 63, 247, 204, 52, 165, 229, 241, 113,
+            216, 49, 21, 4, 199, 35, 195, 24, 150, 5, 154, 7, 18, 128, 226, 235, 39, 178, 117, 9, 131, 44, 26, 27, 110,
+            90, 160, 82, 59, 214, 179, 41, 227, 47, 132, 83, 209, 0, 237, 32, 252, 177, 91, 106, 203, 190, 57, 74, 76,
+            88, 207, 208, 239, 170, 251, 67, 77, 51, 133, 69, 249, 2, 127, 80, 60, 159, 168, 81, 163, 64, 143, 146, 157,
+            56, 245, 188, 182, 218, 33, 16, 255, 243, 210, 205, 12, 19, 236, 95, 151, 68, 23, 196, 167, 126, 61, 100,
+            93, 25, 115, 96, 129, 79, 220, 34, 42, 144, 136, 70, 238, 184, 20, 222, 94, 11, 219, 224, 50, 58, 10, 73, 6,
+            36, 92, 194, 211, 172, 98, 145, 149, 228, 121, 231, 200, 55, 109, 141, 213, 78, 169, 108, 86, 244, 234, 101,
+            122, 174, 8, 186, 120, 37, 46, 28, 166, 180, 198, 232, 221, 116, 31, 75, 189, 139, 138, 112, 62, 181, 102,
+            72, 3, 246, 14, 97, 53, 87, 185, 134, 193, 29, 158, 225, 248, 152, 17, 105, 217, 142, 148, 155, 30, 135,
+            233, 206, 85, 40, 223, 140, 161, 137, 13, 191, 230, 66, 104, 65, 153, 45, 15, 176, 84, 187, 22]
+
+    res = ''
+    for i in range (0,8,2):
+        curr = int(word[i]+word[i+1], 16)
+        res += f'{sbox[curr]:02x}'
+    return res
+
+
+
+
+
+def generate_keys(key):
+    """takes key as a string, returns keys list[k0,k1,....k10]"""
+
+    keys = []
+    rcon = [0x01000000, 0x02000000, 0x04000000, 0x08000000, 0x10000000, 0x20000000, 0x40000000, 0x80000000,
+            0x1b000000, 0x36000000]
+
+    #append the first key
+    keys.append(key)
+
+    for i in range(1, 11):
+        currKey = '' #generate each key in string currKey
+        words = []
+        for j in range(4): #generate words (w0, w1,...w3)
+            currword = 0x0 #generate each word in string currword
+            if (j==0):
+                t1 = get_word(0, keys[i-1]) #get w0 from k[j-1]
+
+                t2 = subByte(shift8(get_word(3,keys[i-1]))) #subByte(k[n-1]: W3 >>8)
+
+                t3 = rcon[i-1]
+                currword = f'{int(t1, 16) ^ int(t2, 16) ^ t3:08x}'
+            else:
+                t1 = get_word(j, keys[i-1])
+
+                t2 = words[j-1]
+
+                currword = f'{int(t1, 16) ^ int(t2, 16):08x}'
+
+            words.append(currword)
+            currKey += str(currword)
+        keys.append(currKey)
+
+    return keys
+
+
+
+
+
+
+
+
 def aes(key, plain):
     """takes 32-long plain string , key, returns cipher text"""
     cipher = ''
+
+    #generate 11 keys
+    keys = generate_keys(key)
+
     #convert palain text to state matrix
     state = convert_to_state(plain)
 
@@ -152,7 +236,10 @@ def rem(s):
             res+=c
     return res
 
-def to_hex(l):
+
+
+
+def list_to_hex(l):
     """takes list of strings change it to hex"""
     res = deepcopy(l)
     for i in range(len(l)):
@@ -160,7 +247,7 @@ def to_hex(l):
             res[i][j] = hex(int(l[i][j], 16))
     return res
 
-def to_int(l):
+def list_to_int(l):
     """takes list of strings change it to int"""
     res = deepcopy(l)
     for i in range(len(l)):
@@ -171,12 +258,17 @@ def to_int(l):
 
 if __name__ == '__main__':
 
-    a = convert_to_state('54776F204F6E65204E696E652054776F')
-    b = convert_to_state(rem('54 68 61 74 73 20 6D 79 20 4B 75 6E 67 20 46 75'))
-    c = (add_round_key(a,b))
-    d = s_box(c)
-    e = shift_rows(d)
-    e = to_int(e)
-    e = transpose_matrix(e)
-    print(e)
-    print((mix_coloumns(e)))
+    # a = convert_to_state('54776F204F6E65204E696E652054776F')
+    # b = convert_to_state(rem('54 68 61 74 73 20 6D 79 20 4B 75 6E 67 20 46 75'))
+    # c = (add_round_key(a,b))
+    # d = s_box(c)
+    # e = shift_rows(d)
+    # e = list_to_int(e)
+    # e = transpose_matrix(e)
+    # print(e)
+    # print((mix_coloumns(e)))
+    # s=hex(int('54776F204F6E65204E696E652054776F', 16))
+    # print(get_word(1,s))
+    # print(shift8('af7f6798'))
+    # print(subByte('7f6798af'))
+    print(generate_keys(rem('54 68 61 74 73 20 6D 79 20 4B 75 6E 67 20 46 75')))
