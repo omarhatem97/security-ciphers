@@ -48,7 +48,7 @@ def s_box(out_roundKey):
 
 def shift_rows(out_sbox):
     """perform shift rows , takes 4x4 returns 4x4"""
-    print(out_sbox)
+    # print(out_sbox)
     res = deepcopy(out_sbox)
 
     for i in range(4):
@@ -68,7 +68,7 @@ def shift_rows(out_sbox):
     return res
 
 
-def mix_coloumns(state):
+def mix_coloumns(instate):
     gfp2 = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54,
             56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106,
             108, 110, 112, 114, 116, 118, 120, 122, 124, 126, 128, 130, 132, 134, 136, 138, 140, 142, 144, 146, 148,
@@ -94,9 +94,10 @@ def mix_coloumns(state):
             79, 76, 73, 74, 107, 104, 109, 110, 103, 100, 97, 98, 115, 112, 117, 118, 127, 124, 121, 122, 59, 56, 61,
             62, 55, 52, 49, 50, 35, 32, 37, 38, 47, 44, 41, 42, 11, 8, 13, 14, 7, 4, 1, 2, 19, 16, 21, 22, 31, 28, 25,
             26]
-    Nb = len(state)
-    n = [word[:] for word in state]
+    Nb = len(instate)
+    n = [word[:] for word in instate]
 
+    state= list_to_int(instate)
     for i in range(Nb):
         n[i][0] = ((gfp2[state[i][0]] ^ gfp3[state[i][1]]
                    ^ state[i][2] ^ state[i][3]))
@@ -106,6 +107,9 @@ def mix_coloumns(state):
                    ^ gfp2[state[i][2]] ^ gfp3[state[i][3]]))
         n[i][3] = ((gfp3[state[i][0]] ^ state[i][1]
                    ^ state[i][2] ^ gfp2[state[i][3]]))
+
+    n = int_to_str(n)
+    n = transpose_matrix(n)
 
     return n
 
@@ -193,10 +197,12 @@ def generate_keys(key):
     return keys
 
 
-
-
-
-
+def build_cipher(matrix):
+    cipher = ''
+    for i in range(4):
+        for j in range(4):
+            cipher += matrix[j][i]
+    return cipher
 
 
 def aes(key, plain):
@@ -206,23 +212,37 @@ def aes(key, plain):
     #generate 11 keys
     keys = generate_keys(key)
 
+    #Round 0
     #convert palain text to state matrix
     state = convert_to_state(plain)
 
     #add round key
-    out_roundKey = add_round_key(state, key)
+    out_roundKey = add_round_key(state,convert_to_state(keys[0]))
 
-    #s-box (sub-byte)
-    out_sbox = s_box(out_roundKey)
 
-    #shift rows
-    out_shift = shift_rows(out_sbox)
+    for i in range(10):
+        # s-box (sub-byte)
+        out_sbox = s_box(out_roundKey)
 
-    # inverse matrix
-    out_inv = transpose_matrix(out_shift)
+        # shift rows
+        out_shift = shift_rows(out_sbox)
 
-    #mix coloumns
-    out_mix = mix_coloumns(out_inv)
+        # inverse matrix
+        out_inv = transpose_matrix(out_shift)
+
+        #convert out_inv to
+
+        # mix coloumns
+        if(i==9):
+            out_mix = out_shift
+        else:
+            out_mix = mix_coloumns(out_inv)
+
+        #add round key
+        out_roundKey = add_round_key(out_mix, convert_to_state(keys[i+1]))
+
+    #Build cipher from output
+    cipher = build_cipher(out_roundKey)
 
 
 
@@ -255,6 +275,16 @@ def list_to_int(l):
             res[i][j] = int(l[i][j], 16)
     return res
 
+def int_to_str(l):
+    """takes 2d list of int convert it to string"""
+    res = deepcopy(l)
+    for i in range(len(l)):
+        for j in range(len(l)):
+            res[i][j] = f'{l[i][j]:02x}'
+    return res
+
+
+
 
 if __name__ == '__main__':
 
@@ -271,4 +301,4 @@ if __name__ == '__main__':
     # print(get_word(1,s))
     # print(shift8('af7f6798'))
     # print(subByte('7f6798af'))
-    print(generate_keys(rem('54 68 61 74 73 20 6D 79 20 4B 75 6E 67 20 46 75')))
+    print(aes(rem('54 68 61 74 73 20 6D 79 20 4B 75 6E 67 20 46 75'), rem('54 77 6F 20 4F 6E 65 20 4E 69 6E 65 20 54 77 6F')))
