@@ -390,8 +390,6 @@ def decrypt_aes(key, cipher):
         # s-box (sub-byte)
         state = inv_sbox(state)
 
-
-
     #add final round key
     state = add_round_key(state, convert_to_state(keys[-1]))
 
