@@ -275,8 +275,31 @@ def one_round_des(key, plain):
     return cipher
 
 
+def one_round_decrypt_des(key, cipher):
+    """takes key and cipher , return the plaintext"""
+    plain = ""
+    keys = generate_keys(key)
+    keys.reverse()
+    # perform initial permutation on plaintext
+    message_p = initial_permutation(cipher)
+    l_old = message_p[0:32]
+    r_old = message_p[32:64]
+    l_new = ''
+    r_new = ''
+    for i in range(16):
+        l_new = r_old
+        out_f = des_function(r_old, keys[i])  # 32-bit output from des-function
+        r_new = f'{int(l_old, 2) ^ int(out_f, 2):032b}'
+        r_old = r_new
+        l_old = l_new
+
+    plain = fp(r_new + l_new)
+
+    return plain
+
+
 def multi_round_des(key, plain, num_rounds):
-    """takes key and plaintext and performs des encryption algo , returns ciphertext"""
+    """takes key and plaintext, num of rounds and performs des encryption algo , returns ciphertext"""
     cipher = ""
     out = plain
 
@@ -285,6 +308,18 @@ def multi_round_des(key, plain, num_rounds):
 
     cipher = out
     return cipher
+
+
+def multi_round_decrypt_des(key, cipher, num_rounds):
+    """takes key and cipher, num of rounds and performs des decryption algo , returns plaintext"""
+    plain = ""
+    out = cipher
+
+    for i in range(num_rounds):
+        out = one_round_decrypt_des(key, out)
+
+    plain = out
+    return plain
 
 
 
@@ -298,18 +333,26 @@ def rem(s):
 
 if __name__ == '__main__':
 
-    key = int(input('Enter the secret key: '), 16)
-    plain = int(input('Enter plain: '), 16)
-    num = int(input('Enter num iter: '))
+    mode = int(input('Select which mode you need, Encryption(Enter 1) or Decryption(Enter 2): '))
 
-    # key = int('0000000000000000', 16)
-    # plain = int('FFFFFFFFFFFFFFFF', 16)
-    # num = 1
-    k = f'{key:064b}'
-    p = f'{plain:064b}'
+    if(mode == 1):
+        key = int(input('Enter the secret key: '), 16)
+        plain = int(input('Enter plain: '), 16)
+        num = int(input('Enter num iter: '))
+        key = f'{key:064b}'
+        plain = f'{plain:064b}'
+        res = multi_round_des(key, plain, num)
+        print('cipher: ' + hex(int(res, 2))[2:])
+    else:
+        key = int(input('Enter the secret key: '), 16)
+        cipher = int(input('Enter plain: '), 16)
+        num = int(input('Enter num iter: '))
+        key = f'{key:064b}'
+        cipher = f'{cipher:064b}'
+        dec_res = multi_round_decrypt_des(key, cipher, num)
+        print('plain: '+ hex(int(dec_res, 2))[2:])
 
-    res = multi_round_des(k,p,num)
-    print(hex(int(res,2)))
+
 
 
     #testing
