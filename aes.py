@@ -435,6 +435,25 @@ def int_to_str(l):
 
 if __name__ == '__main__':
 
+    mode = int(input('Select which mode you need, Encryption(Enter 1) or Decryption(Enter 2): '))
+
+    if (mode == 1):
+        key = input('Enter the secret key: ')
+        plain = input('Enter plain: ')
+        res = encrypt_aes(key, plain)
+        print('cipher: ' + res)
+    else:
+        key = input('Enter the secret key: ')
+        cipher = input('Enter cipher: ')
+        res = decrypt_aes(key, cipher)
+        print('plain: ' + res)
+
+
+
+    # print(decrypt_aes(rem('5468617473206D79204B756E67204675'),
+    #                   rem('29C3505F571420F6402299B31A02D73A')))
+
+    #testing
     # a = convert_to_state('54776F204F6E65204E696E652054776F')
     # b = convert_to_state(rem('54 68 61 74 73 20 6D 79 20 4B 75 6E 67 20 46 75'))
     # c = (add_round_key(a,b))
@@ -454,7 +473,3 @@ if __name__ == '__main__':
     # # print(subByte('7f6798af'))
     # # print(aes(rem('54 68 61 74 73 20 6D 79 20 4B 75 6E 67 20 46 75'),
     # #           rem('54 77 6F 20 4F 6E 65 20 4E 69 6E 65 20 54 77 6F')))
-
-
-    print(decrypt_aes(rem('54 68 61 74 73 20 6D 79 20 4B 75 6E 67 20 46 75'),
-                      rem('29 C3 50 5F 57 14 20 F6 40 22 99 B3 1A 02 D7 3A')))
