@@ -448,7 +448,7 @@ if __name__ == '__main__':
         res = decrypt_aes(key, cipher)
         print('plain: ' + res)
 
-
+    k = input("press close to exit")
 
     # print(decrypt_aes(rem('5468617473206D79204B756E67204675'),
     #                   rem('29C3505F571420F6402299B31A02D73A')))

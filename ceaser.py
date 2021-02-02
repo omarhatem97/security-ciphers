@@ -1,11 +1,19 @@
 def ceaser_encrypt(key, word):
+    is_lower = True
+    if(word.isupper()):
+        is_lower = False
+        word = word.lower()
+
     res= ''
+
     for l in word:
         if(l == '\n'):
             continue
         l_ascii = ord(l) - 97
         l_ascii = (l_ascii +key )% 26 + 97
         res+= chr(l_ascii)
+    if (is_lower == False):
+        res = res.upper()
     print(res)
     return res
 

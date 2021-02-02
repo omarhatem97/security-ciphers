@@ -6,6 +6,8 @@ def init_matrix(key):
     key_idx = 0          #keep track of key
     alpha_idx = 97   #keep track of alphabitical indeces
 
+    key = "".join(dict.fromkeys(key))
+
     for i in range(5):
         for j in range(5):
             if(key_done == False):
@@ -29,14 +31,17 @@ def prepare_text(plain):
     """
     res = ""
 
-    for i in range(len(plain) - 1):
+    for i in range(0, len(plain), 2):
         if(plain[i]!= plain[i+1]):
             res += plain[i]
+            res += plain[i+1]
         else:
             res += plain[i] + 'x'
-    res += plain[len(plain) -1]
+            res += plain[i+1]
+
 
     if(len(res) %2 != 0):
+        # res += plain[-1]
         res += 'x'
 
     return res
@@ -59,9 +64,16 @@ def play_fair(key, plain):
     """
     takes matrix 5x5 and plain text , returns cipher text
     """
+    is_lower = True
+    if (plain.isupper()):
+        is_lower = False
+
     cipher = ""
     plainText = prepare_text(plain)
     matrix = init_matrix(key)
+
+    if('j' in plainText):
+        plainText = plainText.replace('j', 'i')
 
     for i in range(0, len(plainText) , 2):
         a = plainText[i]
@@ -79,25 +91,32 @@ def play_fair(key, plain):
             cipher += matrix[fr][sc]  # add first char
             cipher += matrix[sr][fc]  # add second char
 
+    if (is_lower == False):
+        cipher = cipher.upper()
     return cipher
 
 
 
 
 if __name__ == '__main__':
+
     out = []
-    key = int(input('Enter the secret key: '))
+    key = str(input('Enter the secret key: '))
     f = open("input/PlayFair/playfair_plain.txt", "r")
-    for word in f:
+    inp = f.read().splitlines()
+    for word in inp:
         out.append(play_fair(key, word))
     f.close()
 
-    f = open("input/Caesar/playfair_out.txt", "w")
+    f = open("input/playfair/playfair_out.txt", "w")
     for word in out:
         f.write(word + '\n')
     f.close()
     # key = 'rats'
-    # x = init_matrix(key)
-    # for i in x:
-    #     print(i)
-    # print(play_fair(key, "rkesbbra"))
+    # x = init_matrix('archangel')
+    # print(x)
+    #
+    # print('rkesbbra')
+    # print(prepare_text('ipmxxpzw'))
+    # print(play_fair('rats', "rkesbbra"))
+

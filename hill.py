@@ -6,10 +6,10 @@ def hill_2 (key, plain):
     takes key as 2x2 matrix , plaintext, returns cipher text
     """
     cipher = ""
-    is_upper = 0
+    is_upper = False
 
     if(plain.isupper()):
-        is_upper = 1
+        is_upper = True
         plain = plain.lower()
 
     if(len(plain) %2 !=0):
@@ -37,10 +37,10 @@ def hill_3 (key, plain):
     takes key as 3x3 matrix , plaintext, returns cipher text
     """
     cipher = ""
-    is_upper = 0
+    is_upper = False
 
     if(plain.isupper()):
-        is_upper = 1
+        is_upper = True
         plain = plain.lower()
 
     while(len(plain) %3 !=0):
@@ -68,5 +68,37 @@ def hill_3 (key, plain):
 
 if __name__ == '__main__':
     key = [[2,4,12], [9,1,6], [7,5,3]]
-    plain ="YGREBGHZ"
-    print(hill_3(key, plain))
+    # plain ="YGREBGHZ"
+    # print(hill_3(key, plain))
+
+    out = []
+
+    f = open("input/Hill/hill_plain_3x3.txt", "r")
+    inp = f.read().splitlines()
+    print(out)
+    for word in inp:
+        out.append(hill_3(key, word))
+    f.close()
+
+    f = open("input/Hill/hill_out_3x3.txt", "w")
+    for word in out:
+        f.write(word + '\n')
+    f.close()
+
+    # key = [[5,17], [8,3]]
+    # # plain ="YGREBGHZ"
+    # # print(hill_3(key, plain))
+    #
+    # out = []
+    #
+    # f = open("input/Hill/hill_plain_2x2.txt", "r")
+    # inp = f.read().splitlines()
+    # print(out)
+    # for word in inp:
+    #     out.append(hill_2(key, word))
+    # f.close()
+    #
+    # f = open("input/Hill/hill_out_2x2.txt", "w")
+    # for word in out:
+    #     f.write(word + '\n')
+    # f.close()

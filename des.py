@@ -333,26 +333,26 @@ def rem(s):
 
 if __name__ == '__main__':
 
-    mode = int(input('Select which mode you need, Encryption(Enter 1) or Decryption(Enter 2): '))
+    mode = int(input('Select which mode you need, Encryption(Enter 1) or Decryption(Enter 2):'))
 
     if(mode == 1):
-        key = int(input('Enter the secret key: '), 16)
-        plain = int(input('Enter plain: '), 16)
-        num = int(input('Enter num iter: '))
+        key = int(input('Enter the secret key:'), 16)
+        plain = int(input('Enter plain:'), 16)
+        num = int(input('Enter num of rounds:'))
         key = f'{key:064b}'
         plain = f'{plain:064b}'
         res = multi_round_des(key, plain, num)
         print('cipher: ' + hex(int(res, 2))[2:])
     else:
         key = int(input('Enter the secret key: '), 16)
-        cipher = int(input('Enter plain: '), 16)
-        num = int(input('Enter num iter: '))
+        cipher = int(input('Enter plain:'), 16)
+        num = int(input('Enter num of rounds:'))
         key = f'{key:064b}'
         cipher = f'{cipher:064b}'
         dec_res = multi_round_decrypt_des(key, cipher, num)
         print('plain: '+ hex(int(dec_res, 2))[2:])
 
-
+    k = input("press close to exit")
 
 
     #testing
